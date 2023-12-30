@@ -1,0 +1,153 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+const int MAX_SIZE = 100;
+
+int main() {
+    setlocale(LC_ALL, "rus");
+    std::string pathh;
+    std::cin >> pathh;
+    std::string filename = pathh;
+    std::ifstream file(filename);
+
+    if (!file) {
+        std::cerr << "Не удалось открыть файл " << filename << std::endl;
+        return 1;
+    }
+
+    std::string names[MAX_SIZE];
+    std::string authors[MAX_SIZE];
+    std::string publishers[MAX_SIZE];
+    int years[MAX_SIZE];
+    double prices[MAX_SIZE];
+
+    int count = 0;
+
+    std::string name, author, publisher;
+    int year;
+    double price;
+
+    while (file >> name >> author >> publisher >> year >> price) {
+        if (count == MAX_SIZE) {
+            std::cerr << "Превышено максимальное количество элементов" << std::endl;
+            break;
+        }
+        names[count] = name;
+        authors[count] = author;
+        publishers[count] = publisher;
+        years[count] = year;
+        prices[count] = price;
+        count++;
+    }
+
+
+    for (int i = 0; i < count; i++) {
+        std::cout << "Название: " << names[i] << std::endl;
+        std::cout << "Автор: " << authors[i] << std::endl;
+        std::cout << "Издательство: " << publishers[i] << std::endl;
+        std::cout << "Год: " << years[i] << std::endl;
+        std::cout << "Цена: " << prices[i] << std::endl;
+        std::cout << std::endl;
+    }
+
+    file.close();
+    int as, max = 0, min = 1000000;
+    std::cin >> as;
+    if (as == 1) {
+        for (int i = 0; i < count; i++) {
+            if (max < prices[i]) {
+                max = prices[i];
+            }
+        }
+        std::cout << max;
+
+    }
+    else if (as == 2) {
+        for (int i = 0; i < count; i++) {
+            if (min > prices[i]) {
+                min = prices[i];
+            }
+        }
+        std::cout << min;
+
+
+    }
+    else if (as == 3) {
+        std::ofstream file("data.txt", std::ios::app);
+
+        if (file.is_open()) {
+
+            file << "\nЭто текст будет добавлен в конец файла." << std::endl;
+
+
+            file.close();
+            std::cout << "Текст был добавлен в конец файла." << std::endl;
+        }
+        else {
+            std::cout << "Не удалось открыть файл." << std::endl;
+        }
+
+    }
+    else if (as == 4) {
+        std::string filepath = "data.txt";
+        std::string lineToDelete = "Название3 Автор3 Издательство3 2020 200.0";
+
+        std::ifstream inputFile(filepath);
+        std::ofstream tempFile("temp.txt");
+
+
+        if (inputFile.is_open() && tempFile.is_open()) {
+            std::string line;
+
+            while (getline(inputFile, line)) {
+
+                if (line != lineToDelete) {
+
+                    tempFile << line << std::endl;
+                }
+            }
+
+
+            inputFile.close();
+            tempFile.close();
+
+
+            remove(filepath.c_str());
+
+            rename("temp.txt", filepath.c_str());
+
+            std::cout << "Строка успешно удалена из файла." << std::endl;
+        }
+        else {
+            std::cout << "Ошибка открытия файла." << std::endl;
+        }
+    }
+    else if (as == 5) {
+        std::ifstream inFile("input.txt");
+        std::ofstream outFile("data.txt", std::ios::app);
+
+        if (!inFile) {
+            std::cerr << "Не удалось открыть файл input.txt!" << std::endl;
+            return 1;
+        }
+
+        if (!outFile) {
+            std::cerr << "Не удалось открыть файл output.txt!" << std::endl;
+            return 1;
+        }
+
+        std::string line;
+        while (std::getline(inFile, line)) {
+            outFile << line << std::endl;
+        }
+
+        inFile.close();
+        outFile.close();
+
+        std::cout << "Данные успешно добавлены в файл output.txt!" << std::endl;
+    }
+
+    return 0;
+}
