@@ -1,0 +1,62 @@
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+#include <numeric>
+using namespace std;
+void greedy_algorithm() {
+	int n = 0;
+	cout << "введите количество вещей: ";
+	cin >> n;
+	vector <int> weights;
+	for (int i = 0; i < n; i++) {
+		int weight = 0;
+		cout << "Введите вес вещи " << i + 1 << ": ";
+		cin >> weight;
+		weights.push_back(weight);
+	}
+	sort(begin(weights), end(weights), greater<>());
+	vector<int> bag1;
+	vector<int> bag2;
+	int total_weight_1 = 0;
+	int total_weight_2 = 0;
+
+	for (int weight : weights) {
+		if (total_weight_1 <= total_weight_2) {
+			bag1.push_back(weight);
+			total_weight_1 += weight;
+		}
+		else {
+			bag2.push_back(weight);
+			total_weight_2 += weight;
+		}
+	} 
+	cout << "Рюкзак первого друга: ";
+	for (int weight : bag1) {
+		cout << weight << " ";
+	}
+	cout << endl;
+
+	cout << "Общий вес для первого друга: " << total_weight_1 << endl;
+
+	cout << "Рюкзак второго друга: ";
+	for (int weight : bag2) {
+		cout << weight << " ";
+	}
+	cout << endl;
+
+	cout << "Общий вес для второго друга: " << total_weight_2 << endl;
+
+	int difference = abs(total_weight_1 - total_weight_2);
+	cout << "Разница в весе рюкзаков: " << difference << endl;
+}
+int main() {
+	setlocale(LC_ALL, "RU");
+	int rep = 5;
+	while (rep == 5) {
+		greedy_algorithm();
+		cout << "введите пять, если хотите повторить: ";
+		cin >> rep;
+	}
+	return 0;
+}
