@@ -1,0 +1,178 @@
+#include <iostream>
+#include <fstream>
+#include <Windows.h>
+#include <vector>
+using namespace std;
+void addAnswer(vector<bool>& answers, const string& answer) {
+    if (answer == "да" || answer=="yes" || answer=="+") {
+        answers.push_back(true);
+    }
+    else if (answer == "нет" || answer == "no" || answer=="-") {
+        answers.push_back(false);
+    }
+    else {
+        cout << "некорректные данные";
+        exit(-1);
+    }
+
+}
+void viewAnswers() {
+    ifstream file("ответы.bin", ios::binary);
+
+    if (!file) {
+        cout << "Ошибка открытия файла!" << endl;
+        return;
+    }
+
+    cout << "Ответы на вопросы" << endl;
+
+    vector<char> answers = {};
+    char answer;
+
+    while (file.read(&answer, sizeof(char))) {
+        answers.push_back(answer);
+    }
+
+    file.close();
+
+    int questionNum = 1;
+
+    for (char answerByte : answers) {
+        for (int i = 0; i < 8; i++) {
+            bool answer = answerByte & (1 << i);
+            cout << "Вопрос " << questionNum << ": " << (answer ? "да" : "нет") << endl;
+            questionNum++;
+        }
+    }
+}
+void modifyAnswer(int questionNum, bool newAnswer) {
+    fstream file("ответы.bin", ios::in | ios::out | ios::binary);
+    if (!file) {
+        cout << "Ошибка открытия файла!" << endl;
+        return;
+    }
+    int byteIndex = (questionNum - 1) / 8;
+    int bitIndex = (questionNum - 1) % 8;
+    file.seekg(byteIndex, ios::beg);
+    char answerByte;
+    file.get(answerByte);
+    bool bitValue = newAnswer ? 1 : 0;
+    answerByte = (answerByte & ~(1 << bitIndex)) | (bitValue << bitIndex);
+    file.seekp(byteIndex, ios::beg);
+    file.put(answerByte);
+    file.close();
+}
+int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    int menu_main = 5;
+    int psih = 0;
+    while (menu_main == 5) {
+        int menu;
+        cout << "МЕНЮ \n";
+        cout << "1- для ответа на все вопросы \n";
+        cout << "2- для просмотра \n";
+        cout << "3- изменение конкретного вопроса \n";
+        cin >> menu;
+        if (menu == 1) {
+            vector<bool> answers;
+            // Вводим ответы на вопросы
+            string answer;
+            cout << "1. Ты часто задумываешься о том, что скажут о тебе  окружающие? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "2. Любую критику переживаешь долго и болезненно и тебе очень важно мнение других? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "3. Считаешь лучше не сделать что-либо, лишь бы избежать ошибки? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "4. Были ли ситуации в которых до сих пор хочется что-то исправить? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "5. Вы ревнивый человек? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "6. Есть ли у тебя зависть к успеху других? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "7. Желание угодить и получить одобрение от людей важнее твоих собственных ценностей и интересов? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            cout << "8. Часто ли ты извиняешься и оправдываешься по каждой мелочи? (да/нет)(yes/no)(+/-): ";
+            cin >> answer;
+            if (answer == "да") {
+                psih += 1;
+            }
+            addAnswer(answers, answer);
+
+            // Сжатие ответов в один байт
+            unsigned char packedByte = 0;
+            for (bool bit : answers) {
+                packedByte = (packedByte << 1) | bit;
+            }
+
+            // Запись в файл
+            ofstream file("ответы.bin", ios::binary);
+            file.write(reinterpret_cast<const char*>(&packedByte), sizeof(packedByte));
+            file.close();
+            if (psih == 2) {
+                cout << "следует записаться к психологу" << endl;
+            }
+            if (psih > 2) {
+                cout << "ты токсичный псих" << endl;
+            }
+            else {
+                cout << "ты эмоционально здоров" << endl;
+            }
+            cout << "Ответы успешно записаны в файл." << endl;
+        }
+        else if (menu == 2) {
+            viewAnswers();
+        }
+        else if (menu == 3) {
+            int questionNum;
+            bool newAnswer;
+            cout << "Введите номер вопроса, который хотите изменить: ";
+            cin >> questionNum;
+            cout << "Введите новый ответ (1 для Да, 0 для Нет): ";
+            cin >> newAnswer;
+            modifyAnswer(questionNum, newAnswer);
+            cout << "Ответ успешно изменен!" << endl;
+            //break;
+        }
+        cout << "введите 5, если хотите вернуться в меню ";
+        cin >> menu_main;
+        
+    }
+    return 0;
+ 
+}
