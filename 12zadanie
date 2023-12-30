@@ -1,0 +1,73 @@
+#include <iostream>
+#include <vector>
+#include <random>
+
+// Структура для представления ячейки матрицы
+struct Cell {
+    int x;
+    int y;
+    int color;
+};
+
+// Рекурсивная функция для поиска области одинакового цвета
+void findRegion(std::vector<std::vector<int>>& matrix, std::vector<std::vector<bool>>& visited, int x, int y, int color, int& count) {
+    if (x < 0 || y < 0 || x >= matrix.size() || y >= matrix[0].size()) {
+        return;
+    }
+    
+    if (visited[x][y] || matrix[x][y] != color) {
+        return;
+    }
+    
+    visited[x][y] = true;
+    count++;
+    
+    findRegion(matrix, visited, x+1, y, color, count);
+    findRegion(matrix, visited, x-1, y, color, count);
+    findRegion(matrix, visited, x, y+1, color, count);
+    findRegion(matrix, visited, x, y-1, color, count);
+}
+
+int main() {
+    int n, m;
+    std::cout << "Введите размеры матрицы (n m): ";
+    std::cin >> n >> m;
+    
+    // Инициализация матрицы и посещенных ячеек
+    std::vector<std::vector<int>> matrix(n, std::vector<int>(m));
+    std::vector<std::vector<bool>> visited(n, std::vector<bool>(m, false));
+    
+    // Заполнение матрицы случайными цветами
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<int> dis(1, 7);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            matrix[i][j] = dis(gen);
+        }
+    }
+    
+    // Поиск наибольших областей одинакового цвета
+    std::vector<Cell> regions;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (!visited[i][j]) {
+                int color = matrix[i][j];
+                int count = 0;
+                findRegion(matrix, visited, i, j, color, count);
+                
+                if (count > 1) {
+                    regions.push_back({i, j, count});
+                }
+            }
+        }
+    }
+    
+    // Вывод результатов
+    std::cout << "Найденные области одинакового цвета:" << std::endl;
+    for (const auto& region : regions) {
+        std::cout << "Цвет: " << matrix[region.x][region.y] << ", количество ячеек: " << region.color << std::endl;
+    }
+    
+    return 0;
+}
