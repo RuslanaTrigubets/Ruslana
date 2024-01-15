@@ -55,7 +55,7 @@ int main() {
 	int rep = 5;
 	while (rep == 5) {
 		greedy_algorithm();
-		cout << "введите пять, если хотите повторить: ";
+		cout << "введите 0, если хотите повторить: ";
 		cin >> rep;
 	}
 	return 0;
