@@ -1,0 +1,94 @@
+#include <iostream>
+#include <cstdlib>
+#include <windows.h>
+#include <algorithm>
+#include <vector>
+#include <random>
+#include <math.h>
+#include <time.h>
+
+using namespace std;
+
+int main() {
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+	int Matrix;
+
+	cout << "Введите размер матрицы: ";
+	cin >> Matrix;
+
+
+	int** matrix = new int*[Matrix];
+	for (int i = 0; i < Matrix; i++) {
+		matrix[i] = new int[Matrix];
+	}
+
+	time_t time(time_t * timer);
+	srand(time(NULL));
+
+	for (int rows = 0; rows < Matrix; rows++) {
+		for (int cols = 0; cols < Matrix; cols++) {
+			matrix[rows][cols] = rand() % 10;
+		}
+	}
+
+	for (int rows = 0; rows < Matrix; rows++) {
+		for (int cols = 0; cols < Matrix; cols++) {
+			cout << matrix[rows][cols] << " ";
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+	if (Matrix % 2 == 0) {
+		int gran;
+		gran = (Matrix/2);
+		int stolb = 1;
+		for (int rows = 0; rows < Matrix; rows++) {
+			for (int cols = 0; cols < Matrix; cols++) {
+				for (int i = 1; i <= gran; i++) {
+					if (cols == i) {
+						int N = matrix[rows][cols];
+						matrix[rows][cols] = matrix[rows][Matrix-i];
+						matrix[rows][Matrix - i] = N;
+					}
+				}
+			}
+		}
+
+		for (int rows = 0; rows < Matrix; rows++) {
+			for (int cols = 0; cols < Matrix; cols++) {
+				cout << matrix[rows][cols] << " ";
+			}
+			cout << endl;
+		}
+	}
+	else {
+		int gran;
+		gran = (Matrix-1)/2;
+		int stolb = 1;
+		for (int rows = 0; rows < Matrix; rows++) {
+			for (int cols = 0; cols < Matrix; cols++) {
+				for (int i = 1; i <= gran; i++) {
+					if (cols == i) {
+						int N = matrix[rows][cols];
+						matrix[rows][cols] = matrix[rows][Matrix - i];
+						matrix[rows][Matrix - i] = N;
+					}
+				}
+			}
+		}
+
+		for (int rows = 0; rows < Matrix; rows++) {
+			for (int cols = 0; cols < Matrix; cols++) {
+				cout << matrix[rows][cols] << " ";
+			}
+			cout << endl;
+		}
+	}
+	system("pause");
+	return 0;
+	
+}
