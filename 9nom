@@ -1,0 +1,82 @@
+﻿#include <iostream>
+#include <cstdlib>
+#include <Windows.h>
+#include <vector>
+
+using std::cout;
+using std::cin;
+using std::endl;
+using std::vector;
+
+int proverka(int a) {
+	while (cin.fail() || a < 0) {
+		cin.clear();
+		cin.ignore(1000, '\n');
+		cout << "Ошибка ввода данных, введите значение заново: ";
+		cin >> a;
+	}
+
+	return a;
+}
+
+int main() {
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+	int NMatrix, NRow;
+
+	cout << "Укажите количество треугольников: ";
+	cin >> NMatrix;
+	NMatrix = proverka(NMatrix);
+
+	cout << "Укажите количество строк в треугольниках: ";
+	cin >> NRow;
+	NRow = proverka(NRow);
+
+	int NCols = (NRow * 2)-1;
+
+	char** Matrix = new char* [NCols];
+	for (int i = 0; i < (NRow); i++) {
+		Matrix[i] = new char[NCols];
+	}
+
+	int p = 2;
+	int x = NCols / 2 + 1;
+	int h = NCols / 2;
+	for (int i = 0; i < NRow; i++) {
+		for (int j = 0; j < NCols; j++) {
+			Matrix[i][j] = ' ';
+			while (x != h && j == h) {
+				Matrix[i][j] = '*';
+				h++;
+				if (x == h) {
+					h = h - p;
+					x++;
+					p = p + 2;
+				}
+			}
+		}
+	}
+
+	int d = 0;
+
+		for (int i = 0; i < NRow; i++) {
+		perehod:
+			d++;
+			for (int j = 0; j < NCols; j++) {
+				cout << Matrix[i][j];
+				if (j == NCols-1) {
+					cout << " ";
+					while (d <= NMatrix) {
+						goto perehod;
+					}
+					d = 0;
+				}
+			}
+			cout << endl;
+		}
+
+	system("pause");
+	return 0;
+}
