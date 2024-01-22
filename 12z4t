@@ -1,0 +1,184 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <iomanip>
+#include <limits>
+
+struct Book {
+    std::string title;
+    std::string author;
+    std::string publisher;
+    int year;
+    double price;
+};
+
+void printBook(const Book& book) {
+    std::cout << std::left << std::setw(20) << "Название" << std::setw(20) << "Автор"
+              << std::setw(20) << "Издательство" << std::setw(10) << "Год" << std::setw(10) << "Цена" << std::endl;
+    std::cout << std::left << std::setw(20) << book.title << std::setw(20) << book.author
+              << std::setw(20) << book.publisher << std::setw(10) << book.year << std::setw(10) << book.price << std::endl;
+}
+
+void readDataFromFile(const std::string& filename, std::vector<Book>& books) {
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        Book book;
+        while (file >> book.title >> book.author >> book.publisher >> book.year >> book.price) {
+            books.push_back(book);
+        }
+        file.close();
+    } else {
+        std::cerr << "Ошибка открытия файла: " << filename << std::endl;
+    }
+}
+
+void writeDataToFile(const std::string& filename, const std::vector<Book>& books) {
+    std::ofstream file(filename);
+    if (file.is_open()) {
+        for (const auto& book : books) {
+            file << book.title << " " << book.author << " " << book.publisher << " " << book.year << " " << book.price << std::endl;
+        }
+        file.close();
+    } else {
+        std::cerr << "Ошибка открытия файла: " << filename << std::endl;
+    }
+}
+
+void addBook(std::vector<Book>& books) {
+    Book newBook;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::cout << "Введите данные о книге:\n";
+    std::cout << "Название: ";
+    std::getline(std::cin, newBook.title);
+    std::cout << "Автор: ";
+    std::getline(std::cin, newBook.author);
+    std::cout << "Издательство: ";
+    std::getline(std::cin, newBook.publisher);
+    std::cout << "Год: ";
+    std::cin >> newBook.year;
+    std::cout << "Цена: ";
+    std::cin >> newBook.price;
+    books.push_back(newBook);
+    std::cout << "Книга добавлена успешно.\n";
+}
+
+void deleteBook(std::vector<Book>& books, size_t index) {
+    if (index < books.size()) {
+        books.erase(books.begin() + index);
+        std::cout << "Книга удалена успешно.\n";
+    } else {
+        std::cerr << "Неверный индекс.\n";
+    }
+}
+
+void addDataFromAnotherFile(const std::string& filename, std::vector<Book>& books) {
+    std::ifstream file(filename);
+    if (file.is_open()) {
+        Book book;
+        while (file >> book.title >> book.author >> book.publisher >> book.year >> book.price) {
+            books.push_back(book);
+        }
+        file.close();
+        std::cout << "Данные добавлены успешно.\n";
+    } else {
+        std::cerr << "Ошибка открытия файла: " << filename << std::endl;
+    }
+}
+
+void sortBooks(std::vector<Book>& books, const std::string& key) {
+    std::sort(books.begin(), books.end(), [key](const Book& a, const Book& b) {
+        std::string aKey, bKey;
+
+        if (key == "название") {
+            aKey = a.title;
+            bKey = b.title;
+        } else if (key == "автор") {
+            aKey = a.author.substr(0, a.author.find(','));
+            bKey = b.author.substr(0, b.author.find(','));
+        } else {
+            // Другие ключи, если необходимо
+            // ...
+        }
+
+        return aKey < bKey;
+    });
+}
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    std::vector<Book> books;
+    std::string filename = "z4t.txt";
+    std::string additionalFilename;
+    std::string sortKey;
+
+    readDataFromFile(filename, books);
+
+    int choice;
+    do {
+        std::cout << "\nМеню:\n";
+        std::cout << "1. Вывести все книги\n";
+        std::cout << "2. Вывести книги в диапазоне цен\n";
+        std::cout << "3. Добавить новую книгу\n";
+        std::cout << "4. Удалить книгу\n";
+        std::cout << "5. Добавить данные из другого файла\n";
+        std::cout << "6. Сортировать книги\n";
+        std::cout << "0. Выйти\n";
+        std::cout << "Введите ваш выбор: ";
+std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                std::cout << std::left << std::setw(20) << "Название" << std::setw(20) << "Автор"
+                          << std::setw(20) << "Издательство" << std::setw(10) << "Год" << std::setw(10) << "Цена" << std::endl;
+                for (const auto& book : books) {
+                    printBook(book);
+                }
+                break;
+            case 2:
+                double minPrice, maxPrice;
+                std::cout << "Введите минимальную цену: ";
+                std::cin >> minPrice;
+                std::cout << "Введите максимальную цену: ";
+                std::cin >> maxPrice;
+
+                std::cout << std::left << std::setw(20) << "Название" << std::setw(20) << "Автор"
+                          << std::setw(20) << "Издательство" << std::setw(10) << "Год" << std::setw(10) << "Цена" << std::endl;
+                for (const auto& book : books) {
+                    if (book.price >= minPrice && book.price <= maxPrice) {
+                        printBook(book);
+                    }
+                }
+                break;
+            case 3:
+                addBook(books);
+                break;
+            case 4:
+                size_t indexToDelete;
+                std::cout << "Введите индекс книги для удаления: ";
+                std::cin >> indexToDelete;
+                deleteBook(books, indexToDelete);
+                break;
+            case 5:
+                std::cout << "Введите имя файла для добавления данных: ";
+                std::cin >> additionalFilename;
+                addDataFromAnotherFile(additionalFilename, books);
+                break;
+            case 6:
+                std::cout << "Введите ключ сортировки (название, автор, и т.д.): ";
+                std::cin >> sortKey;
+                sortBooks(books, sortKey);
+                break;
+            case 0:
+                std::cout << "Выход из программы.\n";
+                break;
+            default:
+                std::cout << "Неверный выбор. Попробуйте снова.\n";
+        }
+    } while (choice != 0);
+
+    writeDataToFile("output.txt", books);
+
+    return 0;
+}
