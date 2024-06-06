@@ -1,0 +1,103 @@
+#include <iostream>
+#include <queue>
+#include <unordered_map>
+#include <vector>
+#include <string>
+using namespace std;
+
+// Узел дерева Хаффмана
+struct HuffmanNode {
+    char character;
+    int frequency;
+    HuffmanNode* left;
+    HuffmanNode* right;
+
+    HuffmanNode(char character, int frequency) {
+        this->character = character;
+        this->frequency = frequency;
+        left = right = nullptr;
+    }
+};
+
+// Сравнение для приоритетной очереди
+struct Compare {
+    bool operator()(HuffmanNode* left, HuffmanNode* right) {
+        return left->frequency > right->frequency;
+    }
+};
+
+// Функция для построения дерева Хаффмана
+HuffmanNode* buildHuffmanTree(unordered_map<char, int>& frequencyMap) {
+    priority_queue<HuffmanNode*, vector<HuffmanNode*>, Compare> minHeap;
+
+    // Создаем узел для каждого символа и добавляем в приоритетную очередь
+    for (auto& pair : frequencyMap) {
+        minHeap.push(new HuffmanNode(pair.first, pair.second));
+    }
+
+    // Построение дерева Хаффмана
+    while (minHeap.size() > 1) {
+        HuffmanNode* left = minHeap.top();
+        minHeap.pop();
+        HuffmanNode* right = minHeap.top();
+        minHeap.pop();
+
+        HuffmanNode* merged = new HuffmanNode('\0', left->frequency + right->frequency);
+        merged->left = left;
+        merged->right = right;
+        minHeap.push(merged);
+    }
+
+    return minHeap.top();
+}
+
+// Функция для рекурсивного получения кодов Хаффмана
+void getHuffmanCodes(HuffmanNode* root, string code, unordered_map<char, string>& huffmanCodes) {
+    if (!root) return;
+
+    if (root->character != '\0') {
+        huffmanCodes[root->character] = code;
+    }
+
+    getHuffmanCodes(root->left, code + "0", huffmanCodes);
+    getHuffmanCodes(root->right, code + "1", huffmanCodes);
+}
+
+// Очистка памяти, занятой деревом Хаффмана
+void deleteTree(HuffmanNode* root) {
+    if (!root) return;
+    deleteTree(root->left);
+    deleteTree(root->right);
+    delete root;
+}
+
+int main() {
+    setlocale(LC_ALL, "rus");
+    string input;
+    cout << "Введите строку: ";
+    getline(cin, input);
+
+    // Подсчитываем частоту каждого символа
+    unordered_map<char, int> frequencyMap;
+    for (char ch : input) {
+        frequencyMap[ch]++;
+    }
+
+    // Строим дерево Хаффмана
+    HuffmanNode* root = buildHuffmanTree(frequencyMap);
+
+    // Получаем коды Хаффмана для каждого символа
+    unordered_map<char, string> huffmanCodes;
+    getHuffmanCodes(root, "", huffmanCodes);
+
+    // Выводим коды Хаффмана
+    cout << "Коды Хаффмана для введенных символов:" << endl;
+    for (auto& pair : huffmanCodes) {
+        cout << pair.first << ": " << pair.second << endl;
+    }
+
+    // Очищаем память, занятую деревом Хаффмана
+    deleteTree(root);
+
+    return 0;
+}
