@@ -1,0 +1,167 @@
+#include <iostream>
+#include <string>
+#include <cctype> // для функции isdigit
+#include <sstream> // для работы с потоками строк
+#include <stack>
+#include <map>
+
+using namespace std;
+
+string convertIntegerPart(int number, int baseTo) {
+    if (number == 0) return "0"; // Если число равно 0, возвращаем "0"
+    string result;
+    while (number > 0) {
+        int digit = number % baseTo;
+        char digitChar = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
+        result = digitChar + result;
+        number /= baseTo;
+    }
+    return result;
+}
+
+// Вспомогательная функция для конвертации дробной части числа
+string convertFractionalPart(double fraction, int baseTo, int precision = 10) {
+    string result;
+    while (precision-- > 0 && fraction > 0.0) {
+        fraction *= baseTo;
+        int digit = static_cast<int>(fraction);
+        char digitChar = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
+        result += digitChar;
+        fraction -= digit;
+    }
+    return result;
+}
+
+// Основная функция для конвертации числа из одной системы счисления в другую с поддержкой чисел с плавающей точкой
+string convertBase(const string& number, int baseFrom, int baseTo) {
+    // Разделение числа на целую и дробную части
+    size_t dotPos = number.find('.');
+    string integerPart = number.substr(0, dotPos);
+    double fractionPart = 0.0;
+    if (dotPos != string::npos) {
+        fractionPart = stod("0." + number.substr(dotPos + 1));
+        fractionPart = stod(number.substr(dotPos));
+    }
+
+    // Конвертация целой части
+    int decimalInteger = stoi(integerPart, 0, baseFrom);
+    string resultInteger = convertIntegerPart(decimalInteger, baseTo);
+
+    // Если есть дробная часть, преобразуем и ее
+    string resultFraction;
+    if (dotPos != string::npos) {
+        resultFraction = "." + convertFractionalPart(fractionPart, baseTo);
+    }
+
+    return resultInteger + resultFraction;
+}
+
+string replaceNumbersInExpression(const string& expr, int baseFrom, int baseTo) {
+    string result;
+    string numberBuffer; // Буфер для накопления цифр числа
+    for (auto ch : expr) {
+        // Проверяем, является ли символ частью числа (цифра или точка)
+        if (isdigit(ch) || ch == '.' || (ch >= 'A' & ch <= 'Z')) {
+            numberBuffer += ch;
+        } else if (ch == '(' || ch == ')') {
+            return "скобки использовать нельзя";
+        } else {
+            // Если накоплено число, конвертируем его и добавляем к результату
+            if (!numberBuffer.empty()) {
+                result += convertBase(numberBuffer, baseFrom, baseTo);
+                numberBuffer.clear();
+            }
+            // Добавляем текущий нечисловой символ к результату
+            result += ch;
+        }
+    }
+    // Не забываем добавить последнее накопленное число, если оно есть
+    if (!numberBuffer.empty()) {
+        result += convertBase(numberBuffer, baseFrom, baseTo);
+    }
+    return result;
+}
+
+double calc(const string& expr) {
+    stack<double> numbers;
+    stack<char> operands;
+    map<char, int> priority = {
+        { '+', 1 },
+        { '-', 1 },
+        { '*', 2 },
+        { '/', 2 }
+    };
+    string numberBuffer;
+
+    for (auto ch : expr) {
+        // Проверяем, является ли символ частью числа (цифра или точка)
+        if (isdigit(ch) || ch == '.' ) {
+            numberBuffer += ch;
+        } else {
+            // Если накоплено число, конвертируем его и добавляем к результату
+            if (!numberBuffer.empty()) {
+                numbers.push(stod(numberBuffer));
+                numberBuffer.clear();
+            }
+            if (operands.empty()) operands.push(ch);
+            else if (priority[ch] > priority[operands.top()]) operands.push(ch);
+            else {
+                double a = numbers.top();
+                numbers.pop();
+                double b = numbers.top();
+                numbers.pop();
+                char op = operands.top();
+                operands.pop();
+                if (op == '+') numbers.push(a + b);
+                else if (op == '-') numbers.push(b - a);
+                else if (op == '*') numbers.push(a * b);
+                else if (op == '/') numbers.push(b / a);
+                operands.push(ch);
+            }
+        }
+    }
+    if (!numberBuffer.empty()) numbers.push(stod(numberBuffer));
+
+    while (!operands.empty()) {
+        char op = operands.top();
+        operands.pop();
+        double a = numbers.top();
+        numbers.pop();
+        double b = numbers.top();
+        numbers.pop();
+        if (op == '+') numbers.push(a + b);
+        else if (op == '-') numbers.push(b - a);
+        else if (op == '*') numbers.push(a * b);
+        else if (op == '/') numbers.push(b / a);
+    }
+    return numbers.top();
+}
+
+// Пример использования новой функции
+int main() {
+    // string expression = "10.25+3.5*2-8/4"; // Пример арифметического выражения
+    string expression;
+    cout << "Введите выражение: ";
+    cin >> expression;
+    
+    int baseFrom;
+    cout << "Введите систему счисления в которой вы ввели выражение: ";
+    cin >> baseFrom;
+    
+    int baseTo;
+    cout << "Введите систему счисления в которой хотите увидеть ответ: ";
+    cin >> baseTo;
+
+    string convertedExpression = replaceNumbersInExpression(expression, baseFrom, baseTo);
+    double result = calc(replaceNumbersInExpression(expression, baseFrom, 10));
+    cout << "Исходное выражение: " << expression << "\n";
+    cout << "Конвертированное выражение: " << convertedExpression << "\n";
+    cout << "Результат в двоичной системе счисления: " << convertBase(to_string(result), 10, 2) << "\n";
+    cout << "Результат в восьмеричной системе счисления: " << convertBase(to_string(result), 10, 8) << "\n";
+    cout << "Результат в десятичной системе счисления: " << result << "\n";
+    cout << "Результат в шестнадцатеричной системе счисления: " << convertBase(to_string(result), 10, 16) << "\n";
+    cout << "Результат в выбранной системе счисления: " << convertBase(to_string(result), 10, baseTo) << "\n";
+
+    return 0;
+}
+
