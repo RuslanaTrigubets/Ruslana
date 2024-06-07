@@ -1,3 +1,4 @@
+//вставки и цифровая сортировка 
 #include <iostream>
 #include <vector>
 #include <cstdlib>
