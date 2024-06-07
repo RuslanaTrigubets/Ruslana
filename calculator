@@ -1,3 +1,4 @@
+//калькулятор 
 #include <iostream>
 #include <string>
 #include <cctype> // для функции isdigit
