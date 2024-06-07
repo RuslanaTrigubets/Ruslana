@@ -1,0 +1,131 @@
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <algorithm>
+
+using std::cout;
+using std::cin;
+using std::endl;
+using std::vector;
+using std::ofstream;
+using std::sort;
+
+int numCheck(int num) {
+    while (cin.fail() || num < 0) {
+        cin.clear();
+        cin.ignore(1000, '\n');
+        cout << "Ошибка ввода данных, введите значение заново: ";
+        cin >> num;
+    }
+    return num;
+}
+
+// Функция для сортировки вставками
+void insertionSort(vector<int>& nums) {
+    for (size_t i = 1; i < nums.size(); i++) {
+        int key = nums[i];
+        int j = i - 1;
+        while (j >= 0 && nums[j] > key) {
+            nums[j + 1] = nums[j];
+            j--;
+        }
+        nums[j + 1] = key;
+    }
+}
+
+// Вспомогательная функция для цифровой сортировки (Radix Sort)
+int getMax(const vector<int>& nums) {
+    int max = nums[0];
+    for (size_t i = 1; i < nums.size(); i++) {
+        if (nums[i] > max)
+            max = nums[i];
+    }
+    return max;
+}
+
+void countSort(vector<int>& nums, int exp) {
+    int n = nums.size();
+    vector<int> output(n);
+    int count[10] = {0};
+
+    for (int i = 0; i < n; i++)
+        count[(nums[i] / exp) % 10]++;
+
+    for (int i = 1; i < 10; i++)
+        count[i] += count[i - 1];
+
+    for (int i = n - 1; i >= 0; i--) {
+        output[count[(nums[i] / exp) % 10] - 1] = nums[i];
+        count[(nums[i] / exp) % 10]--;
+    }
+
+    for (int i = 0; i < n; i++)
+        nums[i] = output[i];
+}
+
+// Функция цифровой сортировки (Radix Sort)
+void radixSort(vector<int>& nums) {
+    int max = getMax(nums);
+    for (int exp = 1; max / exp > 0; exp *= 10)
+        countSort(nums, exp);
+}
+
+void takeNums() {
+    srand(time(0));
+    int countNums;
+    ofstream notSorted, sorted;
+    bool flag = true; 
+    notSorted.open("notSorted");
+    sorted.open("sorted");
+    vector<int> nums;
+
+    cout << "Укажите диапазон чисел: ";
+    cin >> countNums;
+    countNums = numCheck(countNums);
+
+    cout << "Неотсортированный массив:" << '\n';
+    for (int i = 0; i < countNums; i++) {
+        nums.push_back(rand() % countNums);
+        cout << nums[i] << " ";
+        notSorted << nums[i] << " ";
+    }
+    cout << '\n';
+
+    insertionSort(nums);
+    cout << "Отсортированный массив (вставка):" << '\n';
+    for (int i = 0; i < countNums; i++) {
+        cout << nums[i] << " ";
+        sorted << nums[i] << " ";
+    }
+
+    vector<int> nums2(nums);
+    radixSort(nums2);
+    for (int i = 0; i < countNums; i++) {
+        if (nums[i] != nums2[i]) {
+            flag = false;
+        }
+    }
+
+    cout << '\n';
+    if (flag) {
+        cout << "Всё отсортировалось, всё супер!";
+    } else {
+        cout << "Нам конец";
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "rus");
+
+    int t1 = clock();
+
+    takeNums();
+
+    int t2 = clock();
+    int t3 = t2 - t1;
+    cout << '\n' << ((double)t3 / CLOCKS_PER_SEC) << "sec." << '\n';
+
+    return 0;
+}
