@@ -1,3 +1,4 @@
+//быстрая сортировка
 #include <iostream>
 #include <vector>
 #include <cstdlib>
